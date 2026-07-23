@@ -545,7 +545,7 @@
                 <span>Total:</span>
                 <span id="cartTotal">$0.00</span>
             </div>
-            <button class="btn" style="width: 100%;" onclick="alert('Proceeding to Checkout!')">Checkout</button>
+            <button class="btn" style="width: 100%;" onclick="checkout()">Checkout with PayPal</button>
         </div>
     </div>
 
@@ -554,7 +554,7 @@
         <p>&copy; 2026 VALDORIA. All Rights Reserved.</p>
     </footer>
 
-    <!-- Interactive Shopping Cart Script -->
+    <!-- Interactive Cart & PayPal Checkout Script -->
     <script>
         let cart = [];
 
@@ -607,63 +607,7 @@
             cart.splice(index, 1);
             updateCartUI();
         }
-    </script>
-</body>
-</html>
-<script>
-        let cart = [];
 
-        function toggleCart(e) {
-            if(e) e.preventDefault();
-            document.getElementById('cartDrawer').classList.toggle('open');
-        }
-
-        function addToCart(title, price, sizeSelectId) {
-            const size = document.getElementById(sizeSelectId).value;
-            cart.push({ title, price, size });
-            updateCartUI();
-            document.getElementById('cartDrawer').classList.add('open');
-        }
-
-        function updateCartUI() {
-            const cartItemsContainer = document.getElementById('cartItems');
-            const cartCount = document.getElementById('cart-count');
-            const cartTotal = document.getElementById('cartTotal');
-
-            cartCount.textContent = cart.length;
-
-            if (cart.length === 0) {
-                cartItemsContainer.innerHTML = '<p style="color: var(--text-muted); text-align: center; margin-top: 20px;">Your cart is empty.</p>';
-                cartTotal.textContent = '$0.00';
-                return;
-            }
-
-            let html = '';
-            let total = 0;
-
-            cart.forEach((item, index) => {
-                total += item.price;
-                html += `
-                    <div class="cart-item">
-                        <div>
-                            <div class="cart-item-title">${item.title}</div>
-                            <div class="cart-item-details">Size: ${item.size} | $${item.price}.00</div>
-                        </div>
-                        <button style="background:none; border:none; color:#ff4444; cursor:pointer;" onclick="removeFromCart(${index})">Remove</button>
-                    </div>
-                `;
-            });
-
-            cartItemsContainer.innerHTML = html;
-            cartTotal.textContent = `$${total}.00`;
-        }
-
-        function removeFromCart(index) {
-            cart.splice(index, 1);
-            updateCartUI();
-        }
-
-        // REDIRECT TO PAYPAL ME CHECKOUT
         function checkout() {
             if (cart.length === 0) {
                 alert('Your cart is empty!');
@@ -672,10 +616,11 @@
 
             let total = cart.reduce((sum, item) => sum + item.price, 0);
             
-            // Redirects to your PayPal link with the total cart amount
-            const paypalUsername = "YoussefAouari41"; // Your PayPal username
+            const paypalUsername = "YoussefAouari41";
             const paypalUrl = `https://paypal.me/${paypalUsername}/${total}USD`;
 
             window.open(paypalUrl, '_blank');
         }
     </script>
+</body>
+</html>
