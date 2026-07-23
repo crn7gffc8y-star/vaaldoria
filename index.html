@@ -214,7 +214,7 @@
             text-transform: uppercase;
         }
 
-        .size-selector select {
+        .size-selector select, .shipping-form input {
             width: 100%;
             padding: 8px 10px;
             background-color: #0b0b0b;
@@ -222,11 +222,6 @@
             border: 1px solid var(--border-color);
             border-radius: 4px;
             outline: none;
-            cursor: pointer;
-        }
-
-        .size-selector select:focus {
-            border-color: #666;
         }
 
         .btn {
@@ -321,25 +316,46 @@
             margin-bottom: 15px;
         }
 
-        /* Responsive Mobile Styling */
+        /* Modal Overlay */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85);
+            z-index: 300;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: #141414;
+            padding: 30px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+            border: 1px solid var(--border-color);
+            position: relative;
+        }
+
+        .shipping-form input {
+            margin-bottom: 12px;
+        }
+
+        footer {
+            text-align: center;
+            padding: 30px;
+            border-top: 1px solid var(--border-color);
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            margin-top: 60px;
+        }
+
         @media (max-width: 600px) {
-            header {
-                padding: 15px;
-            }
-
-            .hero h1 {
-                font-size: 2.2rem;
-            }
-
-            .promo-banner {
-                margin: 20px 15px 0 15px;
-                padding: 15px;
-            }
-
-            .cart-drawer {
-                width: 100%;
-                right: -100%;
-            }
+            header { padding: 15px; }
+            .hero h1 { font-size: 2.2rem; }
+            .promo-banner { margin: 20px 15px 0 15px; padding: 15px; }
+            .cart-drawer { width: 100%; right: -100%; }
         }
     </style>
 </head>
@@ -545,7 +561,25 @@
                 <span>Total:</span>
                 <span id="cartTotal">$0.00</span>
             </div>
-            <button class="btn" style="width: 100%;" onclick="checkout()">Checkout with PayPal</button>
+            <button class="btn" style="width: 100%;" onclick="openCheckoutModal()">Proceed to Order</button>
+        </div>
+    </div>
+
+    <!-- Shipping Details Modal -->
+    <div class="modal" id="checkoutModal">
+        <div class="modal-content">
+            <button class="close-cart-btn" style="position: absolute; top: 15px; right: 15px;" onclick="closeCheckoutModal()">✕</button>
+            <h3 style="margin-bottom: 15px;">Shipping Information</h3>
+            <form class="shipping-form" id="shippingForm" onsubmit="processCheckout(event)">
+                <input type="text" id="firstName" placeholder="First Name" required>
+                <input type="text" id="lastName" placeholder="Last Name" required>
+                <input type="email" id="email" placeholder="Email Address" required>
+                <input type="text" id="address1" placeholder="Street Address" required>
+                <input type="text" id="city" placeholder="City" required>
+                <input type="text" id="zip" placeholder="ZIP / Postal Code" required>
+                <input type="text" id="country" placeholder="Country Code (e.g. US)" required>
+                <button type="submit" class="btn" style="width: 100%;">Pay with PayPal & Dispatch Order</button>
+            </form>
         </div>
     </div>
 
@@ -554,7 +588,7 @@
         <p>&copy; 2026 VALDORIA. All Rights Reserved.</p>
     </footer>
 
-    <!-- Interactive Cart & PayPal Checkout Script -->
+    <!-- Interactive Cart & Checkout Script -->
     <script>
         let cart = [];
 
@@ -608,18 +642,740 @@
             updateCartUI();
         }
 
-        function checkout() {
+        function openCheckoutModal() {
             if (cart.length === 0) {
                 alert('Your cart is empty!');
                 return;
             }
+            document.getElementById('checkoutModal').style.display = 'flex';
+        }
 
-            let total = cart.reduce((sum, item) => sum + item.price, 0);
-            
+        function closeCheckoutModal() {
+            document.getElementById('checkoutModal').style.display = 'none';
+        }
+
+        async function processCheckout(e) {
+            e.preventDefault();
+
+            const total = cart.reduce((sum, item) => sum + item.price, 0);
+
+            const recipient = {
+                first_name: document.getElementById('firstName').value,
+                last_name: document.getElementById('lastName').value,
+                email: document.getElementById('email').value,
+                address1: document.getElementById('address1').value,
+                city: document.getElementById('city').value,
+                zip: document.getElementById('zip').value,
+                country: document.getElementById('country').value
+            };
+
+            // 1. Dispatch order payload to the Print-On-Demand Backend Server
+            try {
+                await fetch('http://localhost:3000/api/create-pod-order', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ recipient, cartItems: cart })
+                });
+            } catch (err) {
+                console.warn("POD API dispatch failed or backend server offline.");
+            }
+
+            // 2. Redirect to PayPal.me to finalize payment
             const paypalUsername = "YoussefAouari41";
-            const paypalUrl = `https://paypal.me/${paypalUsername}/${total}USD`;
+            window.location.href = `https://paypal.me/${paypalUsername}/${total}USD`;
+        }
+    </script>
+</body>
+</html>
+        }
+    </script>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VALDORIA | Official Store</title>
+    <style>
+        :root {
+            --bg-color: #0b0b0b;
+            --card-bg: #141414;
+            --accent-color: #ffffff;
+            --text-muted: #888888;
+            --border-color: #222222;
+        }
 
-            window.open(paypalUrl, '_blank');
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: #ffffff;
+            line-height: 1.6;
+        }
+
+        /* Header / Navbar */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 5%;
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            background-color: rgba(11, 11, 11, 0.95);
+            backdrop-filter: blur(5px);
+            z-index: 100;
+        }
+
+        .logo img {
+            height: 40px;
+            object-fit: contain;
+        }
+
+        nav {
+            display: flex;
+            align-items: center;
+        }
+
+        nav a {
+            color: var(--text-muted);
+            text-decoration: none;
+            margin-left: 20px;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: color 0.3s;
+            cursor: pointer;
+        }
+
+        nav a:hover {
+            color: var(--accent-color);
+        }
+
+        .cart-icon-btn {
+            position: relative;
+        }
+
+        .cart-count {
+            background-color: #00ff66;
+            color: #000;
+            font-weight: bold;
+            font-size: 0.75rem;
+            padding: 2px 6px;
+            border-radius: 50%;
+            margin-left: 4px;
+        }
+
+        /* Hero Banner */
+        .hero {
+            text-align: center;
+            padding: 80px 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+
+        .hero p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            letter-spacing: 2px;
+        }
+
+        /* Bundle Promo Banner */
+        .promo-banner {
+            background: linear-gradient(90deg, #1f1f1f 0%, #111111 100%);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin: 40px 5% 0 5%;
+            padding: 25px;
+            text-align: center;
+        }
+
+        .promo-banner h2 {
+            font-size: 1.4rem;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .promo-banner p {
+            color: #ccc;
+        }
+
+        .highlight {
+            color: #00ff66;
+            font-weight: bold;
+        }
+
+        /* Product Grid */
+        .container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .section-title {
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 30px;
+            font-size: 1.2rem;
+            color: var(--text-muted);
+        }
+
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+        }
+
+        .product-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.3s, border-color 0.3s;
+        }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+            border-color: #444;
+        }
+
+        .product-image {
+            width: 100%;
+            height: 320px;
+            object-fit: cover;
+            background-color: #000;
+        }
+
+        .product-info {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+        }
+
+        .product-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .product-price {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 12px;
+        }
+
+        .bundle-badge {
+            display: inline-block;
+            background-color: #00ff66;
+            color: #000;
+            font-size: 0.75rem;
+            font-weight: bold;
+            padding: 3px 8px;
+            border-radius: 4px;
+            margin-bottom: 12px;
+            align-self: flex-start;
+            text-transform: uppercase;
+        }
+
+        /* Size Selector Styling */
+        .size-selector {
+            margin-bottom: 15px;
+        }
+
+        .size-selector label {
+            display: block;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+
+        .size-selector select, .shipping-form input {
+            width: 100%;
+            padding: 8px 10px;
+            background-color: #0b0b0b;
+            color: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            outline: none;
+        }
+
+        .btn {
+            background-color: #ffffff;
+            color: #000000;
+            border: none;
+            padding: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+            cursor: pointer;
+            margin-top: auto;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+
+        .btn:hover {
+            background-color: #cccccc;
+        }
+
+        /* Cart Side Drawer */
+        .cart-drawer {
+            position: fixed;
+            top: 0;
+            right: -400px;
+            width: 350px;
+            height: 100%;
+            background-color: #141414;
+            border-left: 1px solid var(--border-color);
+            box-shadow: -5px 0 15px rgba(0,0,0,0.5);
+            z-index: 200;
+            transition: right 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+        }
+
+        .cart-drawer.open {
+            right: 0;
+        }
+
+        .cart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+
+        .close-cart-btn {
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .cart-items {
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #222;
+        }
+
+        .cart-item-title {
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        .cart-item-details {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .cart-footer {
+            border-top: 1px solid var(--border-color);
+            padding-top: 15px;
+        }
+
+        .cart-total {
+            display: flex;
+            justify-content: space-between;
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        /* Modal Overlay */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85);
+            z-index: 300;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: #141414;
+            padding: 30px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+            border: 1px solid var(--border-color);
+            position: relative;
+        }
+
+        .shipping-form input {
+            margin-bottom: 12px;
+        }
+
+        footer {
+            text-align: center;
+            padding: 30px;
+            border-top: 1px solid var(--border-color);
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            margin-top: 60px;
+        }
+
+        @media (max-width: 600px) {
+            header { padding: 15px; }
+            .hero h1 { font-size: 2.2rem; }
+            .promo-banner { margin: 20px 15px 0 15px; padding: 15px; }
+            .cart-drawer { width: 100%; right: -100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header / Branding -->
+    <header>
+        <div class="logo">
+            <img src="EFE5525B-97E3-40C4-AD6E-1B7DDB95F554 (1).jpg" alt="VALDORIA Logo">
+        </div>
+        <nav>
+            <a href="#shop">Shop</a>
+            <a href="#bundles">Offers</a>
+            <a href="#cart" class="cart-icon-btn" onclick="toggleCart(event)">Cart <span class="cart-count" id="cart-count">0</span></a>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <h1>VALDORIA</h1>
+        <p>BUILT DIFFERENT</p>
+    </section>
+
+    <!-- Set Deal Promo -->
+    <div class="promo-banner" id="bundles">
+        <h2>🔥 Exclusive Set Offer</h2>
+        <p>Buy any T-Shirt ($40) + Shorts ($60) combo for <span class="highlight">$90</span> (Save $10)!</p>
+    </div>
+
+    <!-- Main Products Section -->
+    <main class="container" id="shop">
+        <h2 class="section-title">Latest Drop</h2>
+        <div class="product-grid">
+
+            <!-- Product 1: Black T-Shirt -->
+            <div class="product-card">
+                <img src="7000E4FE-FB29-4150-8CC1-7D8B44392BF3 (6).jpeg" alt="VALDORIA Black T-Shirt" class="product-image">
+                <div class="product-info">
+                    <div class="product-title">Black Tee</div>
+                    <div class="product-price">$40.00</div>
+                    <div class="size-selector">
+                        <label for="size-black-tee">Select Size:</label>
+                        <select id="size-black-tee">
+                            <option value="S">Small (S)</option>
+                            <option value="M" selected>Medium (M)</option>
+                            <option value="L">Large (L)</option>
+                            <option value="XL">Extra Large (XL)</option>
+                        </select>
+                    </div>
+                    <button class="btn" onclick="addToCart('Black Tee', 40, 'size-black-tee')">Add to Cart</button>
+                </div>
+            </div>
+
+            <!-- Product 2: Black Shorts -->
+            <div class="product-card">
+                <img src="7000E4FE-FB29-4150-8CC1-7D8B44392BF3 (4).jpeg" alt="VALDORIA Black Shorts" class="product-image">
+                <div class="product-info">
+                    <div class="product-title">Black Shorts</div>
+                    <div class="product-price">$60.00</div>
+                    <div class="size-selector">
+                        <label for="size-black-shorts">Select Size:</label>
+                        <select id="size-black-shorts">
+                            <option value="S">Small (S)</option>
+                            <option value="M" selected>Medium (M)</option>
+                            <option value="L">Large (L)</option>
+                            <option value="XL">Extra Large (XL)</option>
+                        </select>
+                    </div>
+                    <button class="btn" onclick="addToCart('Black Shorts', 60, 'size-black-shorts')">Add to Cart</button>
+                </div>
+            </div>
+
+            <!-- Product 3: Black Set Bundle ($90) -->
+            <div class="product-card">
+                <img src="7000E4FE-FB29-4150-8CC1-7D8B44392BF3 (6).jpeg" alt="VALDORIA Black Set" class="product-image">
+                <div class="product-info">
+                    <div class="bundle-badge">Save $10 Bundle</div>
+                    <div class="product-title">Black Set (Tee + Shorts)</div>
+                    <div class="product-price">$90.00</div>
+                    <div class="size-selector">
+                        <label for="size-black-set">Select Size:</label>
+                        <select id="size-black-set">
+                            <option value="S">Small (S)</option>
+                            <option value="M" selected>Medium (M)</option>
+                            <option value="L">Large (L)</option>
+                            <option value="XL">Extra Large (XL)</option>
+                        </select>
+                    </div>
+                    <button class="btn" onclick="addToCart('Black Set Bundle', 90, 'size-black-set')">Add Bundle to Cart</button>
+                </div>
+            </div>
+
+            <!-- Product 4: White T-Shirt -->
+            <div class="product-card">
+                <img src="7000E4FE-FB29-4150-8CC1-7D8B44392BF3 (8).jpeg" alt="VALDORIA White T-Shirt" class="product-image">
+                <div class="product-info">
+                    <div class="product-title">White Tee</div>
+                    <div class="product-price">$40.00</div>
+                    <div class="size-selector">
+                        <label for="size-white-tee">Select Size:</label>
+                        <select id="size-white-tee">
+                            <option value="S">Small (S)</option>
+                            <option value="M" selected>Medium (M)</option>
+                            <option value="L">Large (L)</option>
+                            <option value="XL">Extra Large (XL)</option>
+                        </select>
+                    </div>
+                    <button class="btn" onclick="addToCart('White Tee', 40, 'size-white-tee')">Add to Cart</button>
+                </div>
+            </div>
+
+            <!-- Product 5: White Shorts -->
+            <div class="product-card">
+                <img src="7000E4FE-FB29-4150-8CC1-7D8B44392BF3 (7).jpeg" alt="VALDORIA White Shorts" class="product-image">
+                <div class="product-info">
+                    <div class="product-title">White Shorts</div>
+                    <div class="product-price">$60.00</div>
+                    <div class="size-selector">
+                        <label for="size-white-shorts">Select Size:</label>
+                        <select id="size-white-shorts">
+                            <option value="S">Small (S)</option>
+                            <option value="M" selected>Medium (M)</option>
+                            <option value="L">Large (L)</option>
+                            <option value="XL">Extra Large (XL)</option>
+                        </select>
+                    </div>
+                    <button class="btn" onclick="addToCart('White Shorts', 60, 'size-white-shorts')">Add to Cart</button>
+                </div>
+            </div>
+
+            <!-- Product 6: White Set Bundle ($90) -->
+            <div class="product-card">
+                <img src="7000E4FE-FB29-4150-8CC1-7D8B44392BF3 (8).jpeg" alt="VALDORIA White Set" class="product-image">
+                <div class="product-info">
+                    <div class="bundle-badge">Save $10 Bundle</div>
+                    <div class="product-title">White Set (Tee + Shorts)</div>
+                    <div class="product-price">$90.00</div>
+                    <div class="size-selector">
+                        <label for="size-white-set">Select Size:</label>
+                        <select id="size-white-set">
+                            <option value="S">Small (S)</option>
+                            <option value="M" selected>Medium (M)</option>
+                            <option value="L">Large (L)</option>
+                            <option value="XL">Extra Large (XL)</option>
+                        </select>
+                    </div>
+                    <button class="btn" onclick="addToCart('White Set Bundle', 90, 'size-white-set')">Add Bundle to Cart</button>
+                </div>
+            </div>
+
+            <!-- Product 7: Black Paradox Denim -->
+            <div class="product-card">
+                <img src="45FF573F-E8A4-419E-91FC-63ED519BA7DA.jpg" alt="VALDORIA Paradox Denim" class="product-image">
+                <div class="product-info">
+                    <div class="product-title">VALDORIA Paradox Denim</div>
+                    <div class="product-price">$79.00</div>
+                    <div class="size-selector">
+                        <label for="size-denim">Select Size:</label>
+                        <select id="size-denim">
+                            <option value="S">Small (S)</option>
+                            <option value="M" selected>Medium (M)</option>
+                            <option value="L">Large (L)</option>
+                            <option value="XL">Extra Large (XL)</option>
+                        </select>
+                    </div>
+                    <button class="btn" onclick="addToCart('Paradox Denim', 79, 'size-denim')">Add to Cart</button>
+                </div>
+            </div>
+
+            <!-- Product 8: Black Hoodie -->
+            <div class="product-card">
+                <img src="DC3B3D0D-3439-4C3F-A900-35A145C4206F.jpeg" alt="VALDORIA Arch Hoodie" class="product-image">
+                <div class="product-info">
+                    <div class="product-title">VALDORIA Arch Hoodie</div>
+                    <div class="product-price">$69.00</div>
+                    <div class="size-selector">
+                        <label for="size-hoodie">Select Size:</label>
+                        <select id="size-hoodie">
+                            <option value="S">Small (S)</option>
+                            <option value="M" selected>Medium (M)</option>
+                            <option value="L">Large (L)</option>
+                            <option value="XL">Extra Large (XL)</option>
+                        </select>
+                    </div>
+                    <button class="btn" onclick="addToCart('Arch Hoodie', 69, 'size-hoodie')">Add to Cart</button>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Cart Drawer -->
+    <div class="cart-drawer" id="cartDrawer">
+        <div class="cart-header">
+            <h3>Your Cart</h3>
+            <button class="close-cart-btn" onclick="toggleCart()">✕</button>
+        </div>
+        <div class="cart-items" id="cartItems">
+            <p style="color: var(--text-muted); text-align: center; margin-top: 20px;">Your cart is empty.</p>
+        </div>
+        <div class="cart-footer">
+            <div class="cart-total">
+                <span>Total:</span>
+                <span id="cartTotal">$0.00</span>
+            </div>
+            <button class="btn" style="width: 100%;" onclick="openCheckoutModal()">Proceed to Order</button>
+        </div>
+    </div>
+
+    <!-- Shipping Details Modal -->
+    <div class="modal" id="checkoutModal">
+        <div class="modal-content">
+            <button class="close-cart-btn" style="position: absolute; top: 15px; right: 15px;" onclick="closeCheckoutModal()">✕</button>
+            <h3 style="margin-bottom: 15px;">Shipping Information</h3>
+            <form class="shipping-form" id="shippingForm" onsubmit="processCheckout(event)">
+                <input type="text" id="firstName" placeholder="First Name" required>
+                <input type="text" id="lastName" placeholder="Last Name" required>
+                <input type="email" id="email" placeholder="Email Address" required>
+                <input type="text" id="address1" placeholder="Street Address" required>
+                <input type="text" id="city" placeholder="City" required>
+                <input type="text" id="zip" placeholder="ZIP / Postal Code" required>
+                <input type="text" id="country" placeholder="Country Code (e.g. US)" required>
+                <button type="submit" class="btn" style="width: 100%;">Pay with PayPal & Dispatch Order</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2026 VALDORIA. All Rights Reserved.</p>
+    </footer>
+
+    <!-- Interactive Cart & Checkout Script -->
+    <script>
+        let cart = [];
+
+        function toggleCart(e) {
+            if(e) e.preventDefault();
+            document.getElementById('cartDrawer').classList.toggle('open');
+        }
+
+        function addToCart(title, price, sizeSelectId) {
+            const size = document.getElementById(sizeSelectId).value;
+            cart.push({ title, price, size });
+            updateCartUI();
+            document.getElementById('cartDrawer').classList.add('open');
+        }
+
+        function updateCartUI() {
+            const cartItemsContainer = document.getElementById('cartItems');
+            const cartCount = document.getElementById('cart-count');
+            const cartTotal = document.getElementById('cartTotal');
+
+            cartCount.textContent = cart.length;
+
+            if (cart.length === 0) {
+                cartItemsContainer.innerHTML = '<p style="color: var(--text-muted); text-align: center; margin-top: 20px;">Your cart is empty.</p>';
+                cartTotal.textContent = '$0.00';
+                return;
+            }
+
+            let html = '';
+            let total = 0;
+
+            cart.forEach((item, index) => {
+                total += item.price;
+                html += `
+                    <div class="cart-item">
+                        <div>
+                            <div class="cart-item-title">${item.title}</div>
+                            <div class="cart-item-details">Size: ${item.size} | $${item.price}.00</div>
+                        </div>
+                        <button style="background:none; border:none; color:#ff4444; cursor:pointer;" onclick="removeFromCart(${index})">Remove</button>
+                    </div>
+                `;
+            });
+
+            cartItemsContainer.innerHTML = html;
+            cartTotal.textContent = `$${total}.00`;
+        }
+
+        function removeFromCart(index) {
+            cart.splice(index, 1);
+            updateCartUI();
+        }
+
+        function openCheckoutModal() {
+            if (cart.length === 0) {
+                alert('Your cart is empty!');
+                return;
+            }
+            document.getElementById('checkoutModal').style.display = 'flex';
+        }
+
+        function closeCheckoutModal() {
+            document.getElementById('checkoutModal').style.display = 'none';
+        }
+
+        async function processCheckout(e) {
+            e.preventDefault();
+
+            const total = cart.reduce((sum, item) => sum + item.price, 0);
+
+            const recipient = {
+                first_name: document.getElementById('firstName').value,
+                last_name: document.getElementById('lastName').value,
+                email: document.getElementById('email').value,
+                address1: document.getElementById('address1').value,
+                city: document.getElementById('city').value,
+                zip: document.getElementById('zip').value,
+                country: document.getElementById('country').value
+            };
+
+            // 1. Dispatch order payload to the Print-On-Demand Backend Server
+            try {
+                await fetch('http://localhost:3000/api/create-pod-order', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ recipient, cartItems: cart })
+                });
+            } catch (err) {
+                console.warn("POD API dispatch failed or backend server offline.");
+            }
+
+            // 2. Redirect to PayPal.me to finalize payment
+            const paypalUsername = "YoussefAouari41";
+            window.location.href = `https://paypal.me/${paypalUsername}/${total}USD`;
         }
     </script>
 </body>
