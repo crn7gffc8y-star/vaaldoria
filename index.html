@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VALDORIA | Official Store</title>
+    <style>
+        :root {
+            --bg-color: #0b0b0b;
+            --card-bg: #141414;
+            --accent-color: #ffffff;
+            --text-muted: #888888;
+            --border-color: #222222;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: #ffffff;
+            line-height: 1.6;
+        }
+
+        /* Header / Navbar */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 5%;
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            background-color: rgba(11, 11, 11, 0.95);
+            backdrop-filter: blur(5px);
+            z-index: 100;
+        }
+
+        .logo img {
+            height: 40px;
+            object-fit: contain;
+        }
+
+        nav a {
+            color: var(--text-muted);
+            text-decoration: none;
+            margin-left: 20px;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: color 0.3s;
+        }
+
+        nav a:hover {
+            color: var(--accent-color);
+        }
+
+        /* Hero Banner */
+        .hero {
+            text-align: center;
+            padding: 80px 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+
+        .hero p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            letter-spacing: 2px;
+        }
+
+        /* Bundle Promo Banner */
+        .promo-banner {
+            background: linear-gradient(90deg, #1f1f1f 0%, #111111 100%);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin: 40px 5% 0 5%;
+            padding: 25px;
+            text-align: center;
+        }
+
+        .promo-banner h2 {
+            font-size: 1.4rem;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .promo-banner p {
+            color: #ccc;
+        }
+
+        .highlight {
+            color: #00ff66;
+            font-weight: bold;
+        }
+
+        /* Product Grid */
+        .container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .section-title {
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 30px;
+            font-size: 1.2rem;
+            color: var(--text-muted);
+        }
+
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+        }
+
+        .product-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.3s, border-color 0.3s;
+        }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+            border-color: #444;
+        }
+
+        .product-image {
+            width: 100%;
+            height: 320px;
+            object-fit: cover;
+            background-color: #000;
+        }
+
+        .product-info {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+        }
+
+        .product-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .product-price {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .btn {
+            background-color: #ffffff;
+            color: #000000;
+            border: none;
+            padding: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+            cursor: pointer;
+            margin-top: auto;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+
+        .btn:hover {
+            background-color: #cccccc;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 40px 20px;
+            border-top: 1px solid var(--border-color);
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            margin-top: 60px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header / Branding -->
+    <header>
+        <div class="logo">
+            <img src="image_2.png" alt="VALDORIA Logo">
+        </div>
+        <nav>
+            <a href="#shop">Shop</a>
+            <a href="#bundles">Offers</a>
+            <a href="#cart">Cart</a>
+        </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <h1>VALDORIA</h1>
+        <p>BUILT DIFFERENT</p>
+    </section>
+
+    <!-- Set Deal Promo -->
+    <div class="promo-banner" id="bundles">
+        <h2>🔥 Exclusive Set Offer</h2>
+        <p>Buy any T-Shirt ($40) + Shorts ($60) combo for <span class="highlight">$90</span> (Save $10)!</p>
+    </div>
+
+    <!-- Main Products Section -->
+    <main class="container" id="shop">
+        <h2 class="section-title">Latest Drop</h2>
+        <div class="product-grid">
+
+            <!-- Product 1: Black T-Shirt -->
+            <div class="product-card">
+                <img src="image_7.png" alt="VALDORIA Black T-Shirt" class="product-image">
+                <div class="product-info">
+                    <div class="product-title">Black Tee</div>
+                    <div class="product-price">$40.00</div>
+                    <button class="btn">Add to Cart</button>
+                </div>
+            </div>
+
+            <!-- Product 2: Black Shorts -->
+            <div class="product-card">
+                <img src="image.png" alt="VALDORIA Black Shorts" class="product-image">
+                <div class="product-info">
+                    <div class="product-title">Black Shorts</div>
+                    <div class="product-price">$60.00</div>
+                    <button class="btn">Add to Cart</button>
+                </div>
+            </div>
+
+            <!-- Product 3: White T-Shirt -->
+            <div class="product-card">
+                <img src="image_5.png" alt="VALDORIA White T-Shirt" class="product-image">
+                <div class="product-info">
+                    <div class="product-title">White Tee</div>
+                    <div class="product-price">$40.00</div>
+                    <button class="btn">Add to Cart</button>
+                </div>
+            </div>
+
+            <!-- Product 4: White Shorts -->
+            <div class="product-card">
+                <img src="image_3.png" alt="VALDORIA White Shorts" class="product-image">
+                <div class="product-info">
+                    <div class="product-title">White Shorts</div>
+                    <div class="product-price">$60.00</div>
+                    <button class="btn">Add to Cart</button>
+                </div>
+            </div>
+
+            <!-- Product 5: Black Jeans -->
+            <div class="product-card">
+                <img src="image_6.png" alt="VALDORIA Paradox Denim Jeans" class="product-image">
+                <div class="product-info">
+                    <div class="product-title">VALDORIA Paradox Denim</div>
+                    <div class="product-price">$79.00</div>
+                    <button class="btn">Add to Cart</button>
+                </div>
+            </div>
+
+            <!-- Product 6: Black Hoodie -->
+            <div class="product-card">
+                <img src="image_4.png" alt="VALDORIA Arch Hoodie" class="product-image">
+                <div class="product-info">
+                    <div class="product-title">VALDORIA Arch Hoodie</div>
+                    <div class="product-price">$69.00</div>
+                    <button class="btn">Add to Cart</button>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2026 VALDORIA. All Rights Reserved.</p>
+    </footer>
+
+</body>
+</html>
